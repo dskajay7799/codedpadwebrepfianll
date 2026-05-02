@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodePad — Save &amp; Share Code</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+ 
+  <!-- ── Offline Banner ─────────────────────────────── -->
+  <div class="offline-banner hidden" id="offline-banner">
+    ⚡ You're offline — saves go to local storage only
+  </div>
+ 
+  <!-- ── Header ─────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">Code<strong>Pad</strong></span>
+    </div>
+    <p class="tagline">Paste · Save · Share</p>
+    <div class="header-right">
+      <span class="status-dot" id="status-dot" title="Online"></span>
+    </div>
+  </header>
+ 
+  <!-- ── Main Layout ────────────────────────────────── -->
+  <main class="container">
+ 
+    <!-- LEFT: Save Panel -->
+    <section class="panel" id="save-panel">
+      <div class="panel-header">
+        <span class="panel-num">01</span>
+        <h2>Write &amp; Save</h2>
+      </div>
+ 
+      <!-- Passkey input (user-defined) -->
+      <div class="passkey-define-row">
+        <label class="toolbar-label" for="passkey-define">
+          🔑 Your Passkey <span class="req">*</span>
+        </label>
+        <div class="passkey-define-wrap">
+          <input
+            type="text"
+            id="passkey-define"
+            placeholder="e.g. myproject2025"
+            maxlength="32"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <button class="icon-btn" id="suggest-key-btn" title="Suggest a random passkey">↺ Suggest</button>
+        </div>
+        <p class="field-hint">Choose any passkey you'll remember. Others use it to load your code.</p>
+      </div>
+ 
+      <!-- Language & Expiry selectors -->
+      <div class="toolbar">
+        <label for="lang-select" class="toolbar-label">Language</label>
+        <select id="lang-select">
+          <option value="plaintext">Plain Text</option>
+          <option value="javascript" selected>JavaScript</option>
+          <option value="python">Python</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="bash">Bash</option>
+          <option value="json">JSON</option>
+          <option value="sql">SQL</option>
+          <option value="cpp">C++</option>
+          <option value="java">Java</option>
+          <option value="typescript">TypeScript</option>
+          <option value="rust">Rust</option>
+          <option value="go">Go</option>
+        </select>
+ 
+        <label for="expiry-select" class="toolbar-label">Expires</label>
+        <select id="expiry-select">
+          <option value="never">Never</option>
+          <option value="1h">1 Hour</option>
+          <option value="24h">24 Hours</option>
+          <option value="7d">7 Days</option>
+        </select>
+      </div>
+ 
+      <!-- Code textarea -->
+      <div class="textarea-wrap">
+        <textarea
+          id="code-input"
+          spellcheck="false"
+          placeholder="// Paste your code here…"
+          autofocus
+        ></textarea>
+        <div class="line-count" id="line-count">1 line</div>
+      </div>
+ 
+      <!-- Save button -->
+      <button class="btn btn-primary" id="save-btn">
+        <span class="btn-icon">↑</span>
+        <span class="btn-text">Save Code</span>
+      </button>
+ 
+      <!-- Save result -->
+      <div class="result-box hidden" id="save-result">
+        <p class="result-label">Saved with passkey</p>
+        <div class="passkey-row">
+          <code class="passkey" id="passkey-display"></code>
+          <button class="icon-btn" id="copy-key-btn" title="Copy passkey">⧉</button>
+        </div>
+        <p class="result-hint">Share this key so others can load your code.</p>
+        <div class="timestamp" id="save-timestamp"></div>
+        <div class="save-source" id="save-source"></div>
+      </div>
+ 
+      <!-- Error -->
+      <div class="error-box hidden" id="save-error"></div>
+    </section>
+ 
+    <!-- DIVIDER -->
+    <div class="divider"><span>or</span></div>
+ 
+    <!-- RIGHT: Load Panel -->
+    <section class="panel" id="load-panel">
+      <div class="panel-header">
+        <span class="panel-num">02</span>
+        <h2>Load by Passkey</h2>
+      </div>
+ 
+      <div class="input-row">
+        <input
+          type="text"
+          id="passkey-input"
+          placeholder="Enter your passkey"
+          maxlength="32"
+          spellcheck="false"
+          autocomplete="off"
+        />
+        <button class="btn btn-secondary" id="load-btn">
+          <span class="btn-icon">↓</span>
+          <span class="btn-text">Load</span>
+        </button>
+      </div>
+ 
+      <!-- Offline notice in load panel -->
+      <div class="info-box hidden" id="offline-load-notice">
+        📦 Offline: only locally saved pastes are available.
+      </div>
+ 
+      <!-- Error -->
+      <div class="error-box hidden" id="load-error"></div>
+ 
+      <!-- Loaded code display -->
+      <div class="code-output hidden" id="code-output">
+        <div class="output-toolbar">
+          <span class="output-lang" id="output-lang-badge">text</span>
+          <span class="output-time" id="output-timestamp"></span>
+          <span class="output-source" id="output-source-badge"></span>
+          <button class="icon-btn" id="copy-code-btn" title="Copy code">⧉ Copy</button>
+        </div>
+        <pre><code id="code-display" class="hljs"></code></pre>
+      </div>
+ 
+      <!-- Loading spinner -->
+      <div class="loader hidden" id="loader">
+        <div class="spinner"></div>
+        <span>Fetching…</span>
+      </div>
+ 
+      <!-- Local pastes list -->
+      <div class="local-pastes hidden" id="local-pastes-panel">
+        <p class="result-label">📦 Locally saved pastes</p>
+        <ul id="local-pastes-list"></ul>
+      </div>
+    </section>
+ 
+  </main>
+ 
+  <!-- ── Footer ─────────────────────────────────────── -->
+  <footer class="site-footer">
+    <p>CodePad &copy; 2025 · Paste · Save · Share · Works Offline</p>
+  </footer>
+ 
+  <div class="toast hidden" id="toast"></div>
+ 
+  <script src="node.js"></script>
+  <script>
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
